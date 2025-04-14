@@ -36,8 +36,8 @@ const corsOptions = {
     const allowedOrigins = [
       'http://localhost:5173', // Local development
       'https://globallifthub.onrender.com', // Production frontend
-      'https://globallifter.onrender.com', // Production backend - explicitly added
-      process.env.FRONTEND_URL // From environment variable
+      'https://globallifthubapi.onrender.com', // Production backend
+      process.env.FRONTEND_URL, // From environment variable
     ].filter(Boolean); // Remove any falsy values
     
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -107,7 +107,7 @@ const server = app.listen(PORT, () => {
   🌐 Allowed Origins: 
      - http://localhost:5173
      - https://globallifthub.onrender.com
-     - https://globallifter.onrender.com
+     - https://globallifthubapi.onrender.com
      - ${process.env.FRONTEND_URL}
   🔒 Authentication required for protected routes
   👑 Admin privileges required for admin routes
