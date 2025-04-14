@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-const API_URL = '/api/opportunities';
-const ADMIN_API_URL = '/api/admin/opportunities';
+// Use the full URL for the API in production
+const API_URL = 'https://globallifthub.onrender.com/api/opportunities';
+const ADMIN_API_URL = 'https://globallifthub.onrender.com/api/admin/opportunities';
 
 // Public
 export const getOpportunities = async (filters = {}, token = null, signal) => {

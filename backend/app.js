@@ -30,40 +30,63 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Middleware
-app.use(cors({
-  origin: process.env.NODE_ENV === 'development'
-    ? 'http://localhost:5173' // Local development frontend
-    : process.env.FRONTEND_URL, // Production frontend URL from environment variable
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+// Enhanced CORS configuration
+const corsOptions = {
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      'http://localhost:5173', // Local development
+      'https://globallifthub.onrender.com', // Production frontend
+      process.env.FRONTEND_URL // From environment variable
+    ].filter(Boolean); // Remove any falsy values
+    
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
+// Security middleware
+app.disable('x-powered-by');
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Serve static files with cache control
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads'), {
+  maxAge: process.env.NODE_ENV === 'production' ? '7d' : '0'
 }));
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Serve static files
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // API Documentation Route
 app.get('/api-docs', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'api-docs.html'));
 });
 
-// Public Routes
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/opportunities', opportunityRoutes);
 app.use('/api/financial-institutions', financialInstitutionRoutes);
 app.use('/api/skills', skillRoutes);
-app.use('/api/opportunities', opportunityRoutes);
-app.use('/api/marketplace', marketplaceRoutes); // Marketplace is public for browsing
-
-// Protected Routes
+app.use('/api/marketplace', marketplaceRoutes);
 app.use('/api/users', protect, userRoutes);
 app.use('/api/loans', protect, loanRoutes);
 app.use('/api/impact', protect, impactRoutes);
-
-// Admin Protected Routes
 app.use('/api/admin/roles', protect, adminOnly, roleRoutes);
 app.use('/api/admin/financial-institutions', protect, adminOnly, financialInstitutionRoutes);
 
@@ -75,15 +98,26 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 const ENVIRONMENT = process.env.NODE_ENV || 'development';
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`
   🌍 Server running in ${ENVIRONMENT} mode
   🚀 Listening on port ${PORT}
+  🔗 MongoDB Connected: ${process.env.MONGO_URI?.split('@')[1]?.split('/')[0] || 'Connected'}
+  🌐 Allowed Origins: 
+     - http://localhost:5173
+     - https://globallifthub.onrender.com
+     - ${process.env.FRONTEND_URL}
   🔒 Authentication required for protected routes
   👑 Admin privileges required for admin routes
   📚 API docs available at /api-docs
-  💳 Marketplace endpoints available at /api/marketplace
+  🏥 Health check at /api/health
   `);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error(`Unhandled Rejection: ${err.message}`);
+  server.close(() => process.exit(1));
 });
 
 export default app;
