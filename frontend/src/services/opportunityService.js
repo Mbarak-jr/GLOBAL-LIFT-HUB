@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Use the full URL for the API in production
-const API_URL = 'https://globallifthub.onrender.com/api/opportunities';
-const ADMIN_API_URL = 'https://globallifthub.onrender.com/api/admin/opportunities';
+const API = import.meta.env.VITE_API_BASE_URL;
+const API_URL = `${API}/opportunities`;
+const ADMIN_API_URL = `${API}/admin/opportunities`;
 
 // Public
 export const getOpportunities = async (filters = {}, token = null, signal) => {
