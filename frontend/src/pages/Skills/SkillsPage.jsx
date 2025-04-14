@@ -1,20 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
 import { FiSearch, FiFilter, FiRefreshCw } from 'react-icons/fi';
+import { getSkills, getCourses } from '../../services/skillsService';
 import SkillCard from '../../components/skills/cards/SkillCard';
 import CourseCard from '../../components/skills/cards/CourseCard';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import SkillsHeader from '../../components/skills/layout/SkillsHeader';
 import SkillsFooter from '../../components/skills/layout/SkillsFooter';
-
-const api = axios.create({
-  baseURL: '/api',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-  },
-});
 
 const SkillsPage = () => {
   const [skills, setSkills] = useState([]);
@@ -30,22 +21,17 @@ const SkillsPage = () => {
     setError(null);
     
     try {
-      const [skillsRes, coursesRes] = await Promise.all([
-        api.get('/skills', { 
-          signal,
-          params: { category: filters.category, search: filters.search }
-        }),
-        api.get('/skills/courses', { 
-          signal,
-          params: { category: filters.category, search: filters.search }
-        })
+      const token = localStorage.getItem('token');
+      const [skillsData, coursesData] = await Promise.all([
+        getSkills(filters, token, signal),
+        getCourses(filters, token, signal)
       ]);
 
-      setSkills(skillsRes.data?.data || []);
-      setCourses(coursesRes.data?.data || []);
-      setFilteredSkills(skillsRes.data?.data || []);
+      setSkills(skillsData);
+      setCourses(coursesData);
+      setFilteredSkills(skillsData);
     } catch (err) {
-      if (!axios.isCancel(err)) {
+      if (!signal?.aborted) {
         setError(err.response?.data?.message || err.message || 'Failed to fetch data');
       }
     } finally {
@@ -179,46 +165,45 @@ const SkillsPage = () => {
           </div>
         </div>
 
-       {/* Search and Filter Section */}
+        {/* Search and Filter Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white p-6 rounded-xl shadow-md">
+          <div className="bg-white p-6 rounded-xl shadow-md">
             <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
+              <div className="relative flex-1">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiSearch className="text-gray-400 text-lg" />
+                  <FiSearch className="text-gray-400 text-lg" />
                 </div>
                 <input
-                type="text"
-                name="search"
-                placeholder={`Search ${activeTab}...`}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                value={filters.search}
-                onChange={handleFilterChange}
+                  type="text"
+                  name="search"
+                  placeholder={`Search ${activeTab}...`}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  value={filters.search}
+                  onChange={handleFilterChange}
                 />
-            </div>
-            <div className="relative flex-1 md:w-64">
+              </div>
+              <div className="relative flex-1 md:w-64">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiFilter className="text-gray-400 text-lg" />
+                  <FiFilter className="text-gray-400 text-lg" />
                 </div>
                 <select
-                name="category"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none text-gray-800"
-                value={filters.category}
-                onChange={handleFilterChange}
+                  name="category"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none text-gray-800"
+                  value={filters.category}
+                  onChange={handleFilterChange}
                 >
-                <option value="" className="text-gray-600">All Categories</option>
-                <option value="financial" className="text-gray-800">Financial Literacy</option>
-                <option value="career" className="text-gray-800">Career Development</option>
-                <option value="education" className="text-gray-800">Education</option>
-                <option value="technology" className="text-gray-800">Technology</option>
-                <option value="health" className="text-gray-800">Health & Wellness</option>
-                <option value="entrepreneurship" className="text-gray-800">Entrepreneurship</option>
+                  <option value="" className="text-gray-600">All Categories</option>
+                  <option value="financial" className="text-gray-800">Financial Literacy</option>
+                  <option value="career" className="text-gray-800">Career Development</option>
+                  <option value="education" className="text-gray-800">Education</option>
+                  <option value="technology" className="text-gray-800">Technology</option>
+                  <option value="health" className="text-gray-800">Health & Wellness</option>
+                  <option value="entrepreneurship" className="text-gray-800">Entrepreneurship</option>
                 </select>
+              </div>
             </div>
-            </div>
+          </div>
         </div>
-        </div>
-
 
         {/* Content Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
