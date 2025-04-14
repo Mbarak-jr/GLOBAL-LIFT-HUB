@@ -1,0 +1,9 @@
+// Define all action types as constants
+export const SET_OPPORTUNITIES = 'SET_OPPORTUNITIES';
+export const ADD_OPPORTUNITY = 'ADD_OPPORTUNITY';
+export const DELETE_OPPORTUNITY = 'DELETE_OPPORTUNITY';
+export const UPDATE_OPPORTUNITY = 'UPDATE_OPPORTUNITY';
+
+export const SET_USER = 'SET_USER';
+export const LOGOUT_USER = 'LOGOUT_USER';
+export const UPDATE_USER_PROFILE = 'UPDATE_USER_PROFILE';
