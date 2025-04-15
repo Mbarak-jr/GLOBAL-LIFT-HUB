@@ -3,6 +3,9 @@ import { AuthContextProvider } from './context/AuthContext';
 import HomePage from './pages/Home';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
+import ForgotPassword from './pages/Auth/ForgotPassword';
+import ResetPassword from './pages/Auth/ResetPassword';
+import VerifyEmail from './pages/Auth/VerifyEmail';
 import ApplyLoans from './pages/Loans/ApplyLoan';
 import MyLoans from './pages/Loans/MyLoans';
 import AllOpportunities from './pages/Opportunities/AllOpportunities';
@@ -18,7 +21,7 @@ import SkillsPage from './pages/Skills/SkillsPage';
 import SkillDetails from './pages/Skills/SkillDetails';
 import CourseDetails from './pages/Skills/CourseDetails';
 import UserProfile from './pages/User/UserProfile';
-import MarketplacePage from './pages/Marketplace/MarketplacePage'; // Import MarketplacePage
+import MarketplacePage from './pages/Marketplace/MarketplacePage';
 
 function App() {
   return (
@@ -29,6 +32,15 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
+          <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+          <Route path="/auth/verify-email" element={<VerifyEmail />} />
+          
+          {/* Password reset routes - handles both query params and path params */}
+          <Route path="/auth/reset-password" element={<ResetPassword />} />
+          <Route path="/auth/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+
           <Route path="/opportunities" element={<AvailableOpportunities />} />
           <Route path="/opportunities/:id" element={<OpportunityDetails />} />
           <Route path="/investment-opportunities" element={<InvestmentOpportunities />} />
@@ -36,7 +48,7 @@ function App() {
           <Route path="/unauthorized" element={<Unauthorized />} />
           
           {/* Marketplace route */}
-          <Route path="/marketplace" element={<MarketplacePage />} /> {/* Add this line */}
+          <Route path="/marketplace" element={<MarketplacePage />} />
 
           {/* Skills and Courses routes */}
           <Route path="/skills" element={<SkillsPage />} />

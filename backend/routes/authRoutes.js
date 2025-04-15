@@ -1,9 +1,27 @@
-import express from 'express';  // Use import instead of require
-import { registerUser, loginUser } from '../controllers/authController.js';  // Change to import
+import express from 'express';
+import {
+  registerUser,
+  loginUser,
+  forgotPassword,
+  resetPassword,
+  verifyResetToken,
+  resendVerificationEmail,
+  verifyEmail
+} from '../controllers/authController.js';
 
 const router = express.Router();
 
+// Authentication routes
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 
-export default router;  // Use export default instead of module.exports
+// Password reset routes
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
+router.get('/verify-reset-token/:token', verifyResetToken);
+
+// Email verification routes
+router.post('/resend-verification', resendVerificationEmail);
+router.get('/verify-email', verifyEmail);
+
+export default router;
