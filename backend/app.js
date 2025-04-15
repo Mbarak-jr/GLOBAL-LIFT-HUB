@@ -17,6 +17,8 @@ import roleRoutes from './routes/roleRoutes.js';
 import financialInstitutionRoutes from './routes/financialInstitutions.js';
 import userRoutes from './routes/userRoutes.js';
 import impactRoutes from './routes/impactRoutes.js';
+import heroSectionRoutes from './routes/heroSectionRoutes.js';
+import featureSectionRoutes from './routes/featureSectionRoutes.js';
 
 // Configure environment variables
 dotenv.config();
@@ -81,6 +83,7 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/roles', roleRoutes);
 app.use('/api/opportunities', opportunityRoutes);
 app.use('/api/financial-institutions', financialInstitutionRoutes);
 app.use('/api/skills', skillRoutes);
@@ -88,8 +91,14 @@ app.use('/api/marketplace', marketplaceRoutes);
 app.use('/api/users', protect, userRoutes);
 app.use('/api/loans', protect, loanRoutes);
 app.use('/api/impact', protect, impactRoutes);
+app.use('/api/hero-sections', heroSectionRoutes);
+app.use('/api/feature-sections', featureSectionRoutes);
+
+// Admin Protected Routes
 app.use('/api/admin/roles', protect, adminOnly, roleRoutes);
 app.use('/api/admin/financial-institutions', protect, adminOnly, financialInstitutionRoutes);
+app.use('/api/admin/hero-sections', protect, adminOnly, heroSectionRoutes);
+app.use('/api/admin/feature-sections', protect, adminOnly, featureSectionRoutes);
 
 // Error Handling Middleware
 app.use(notFound);
@@ -113,6 +122,9 @@ const server = app.listen(PORT, () => {
   👑 Admin privileges required for admin routes
   📚 API docs available at /api-docs
   🏥 Health check at /api/health
+  🎯 Dynamic Sections:
+     - Hero: /api/hero-sections
+     - Features: /api/feature-sections
   `);
 });
 
