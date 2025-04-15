@@ -1,27 +1,16 @@
 import express from 'express';
-import {
-  registerUser,
-  loginUser,
-  forgotPassword,
-  resetPassword,
-  verifyResetToken,
-  resendVerificationEmail,
-  verifyEmail
-} from '../controllers/authController.js';
+import authController from '../controllers/authController.js';
 
 const router = express.Router();
 
 // Authentication routes
-router.post('/register', registerUser);
-router.post('/login', loginUser);
+router.post('/register', authController.registerUser);
+router.post('/login', authController.loginUser);
 
 // Password reset routes
-router.post('/forgot-password', forgotPassword);
-router.post('/reset-password/:token', resetPassword);
-router.get('/verify-reset-token/:token', verifyResetToken);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password/:token', authController.resetPassword);
 
-// Email verification routes
-router.post('/resend-verification', resendVerificationEmail);
-router.get('/verify-email', verifyEmail);
-
+// Remove unused or undefined routes (verifyResetToken & verifyEmail are not defined in controller)
+ 
 export default router;

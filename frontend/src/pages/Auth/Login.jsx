@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { loginUser, resendVerificationEmail } from '../../services/authService';
+import { loginUser } from '../../services/authService';
 import useAuth from '../../hooks/useAuth';
-import { FiMail, FiLock, FiArrowLeft, FiUserPlus, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import { FiMail, FiLock, FiArrowLeft, FiUserPlus, FiAlertCircle } from 'react-icons/fi';
 
 const Login = () => {
   const { login } = useAuth();
@@ -11,8 +11,6 @@ const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showResendLink, setShowResendLink] = useState(false);
-  const [verificationSent, setVerificationSent] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,34 +20,13 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    setShowResendLink(false);
-    setVerificationSent(false);
 
     try {
       const userData = await loginUser(formData);
       login(userData);
       navigate('/dashboard');
     } catch (err) {
-      if (err.message === 'EMAIL_NOT_VERIFIED') {
-        setError('Please verify your email address before logging in.');
-        setShowResendLink(true);
-      } else {
-        setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResendVerification = async () => {
-    try {
-      setIsLoading(true);
-      await resendVerificationEmail(formData.email);
-      setVerificationSent(true);
-      setShowResendLink(false);
-      setError('Verification email sent. Please check your inbox.');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to resend verification email. Please try again.');
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -66,24 +43,9 @@ const Login = () => {
 
           <div className="p-8">
             {error && (
-              <div className={`mb-6 p-3 rounded-lg flex items-start ${verificationSent ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                {verificationSent ? (
-                  <FiCheckCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" />
-                ) : (
-                  <FiAlertCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" />
-                )}
-                <div>
-                  {error}
-                  {showResendLink && !verificationSent && (
-                    <button 
-                      onClick={handleResendVerification}
-                      disabled={isLoading}
-                      className="ml-1 text-blue-600 hover:text-blue-800 font-medium underline focus:outline-none"
-                    >
-                      {isLoading ? 'Sending...' : 'Resend verification email'}
-                    </button>
-                  )}
-                </div>
+              <div className="mb-6 p-3 rounded-lg flex items-start bg-red-50 text-red-700">
+                <FiAlertCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" />
+                <div>{error}</div>
               </div>
             )}
 
@@ -171,7 +133,7 @@ const Login = () => {
                 <div className="w-full border-t border-gray-300"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">New to NoPoverty?</span>
+                <span className="px-2 bg-white text-gray-500">New to GlobalLiftHub?</span>
               </div>
             </div>
 

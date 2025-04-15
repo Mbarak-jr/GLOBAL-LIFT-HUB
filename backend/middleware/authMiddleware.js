@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken';
+import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 
 // Protect middleware to ensure the user is authenticated
-const protect = async (req, res, next) => {
+const protect = asyncHandler(async (req, res, next) => {
   let token;
 
   if (
@@ -19,27 +20,64 @@ const protect = async (req, res, next) => {
       const user = await User.findById(decoded.userId).select('-password');
 
       if (!user) {
-        return res.status(401).json({ message: 'User not found' });
+        res.status(401);
+        throw new Error('User not found');
       }
 
       // Attach the user object to the request
       req.user = user;
       next();
     } catch (error) {
-      return res.status(401).json({ message: 'Not authorized, token failed' });
+      console.error('Authentication error:', error);
+      res.status(401);
+      throw new Error('Not authorized, token failed');
     }
-  } else {
-    return res.status(401).json({ message: 'Not authorized, no token' });
   }
-};
+
+  if (!token) {
+    res.status(401);
+    throw new Error('Not authorized, no token');
+  }
+});
 
 // Admin-only middleware to ensure the user has an admin role
-const adminOnly = (req, res, next) => {
+const admin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     next();
   } else {
-    return res.status(403).json({ message: 'Access denied: Admins only' });
+    res.status(403);
+    throw new Error('Access denied: Admins only');
   }
 };
 
-export { protect, adminOnly };
+// Seller-only middleware to ensure the user has a seller role
+const seller = (req, res, next) => {
+  if (req.user && req.user.role === 'seller') {
+    next();
+  } else {
+    res.status(403);
+    throw new Error('Access denied: Sellers only');
+  }
+};
+
+// Seller or Admin middleware for marketplace operations
+const sellerOrAdmin = (req, res, next) => {
+  if (req.user && (req.user.role === 'seller' || req.user.role === 'admin')) {
+    next();
+  } else {
+    res.status(403);
+    throw new Error('Access denied: Seller or Admin privileges required');
+  }
+};
+
+// Verified user middleware (email verified)
+const verifiedUser = (req, res, next) => {
+  if (req.user && req.user.isVerified) {
+    next();
+  } else {
+    res.status(403);
+    throw new Error('Access denied: Please verify your email first');
+  }
+};
+
+export { protect, admin, seller, sellerOrAdmin, verifiedUser };

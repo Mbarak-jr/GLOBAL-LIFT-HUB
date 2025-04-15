@@ -4,21 +4,22 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
-import { protect, adminOnly } from './middleware/authMiddleware.js';
+import { protect, admin, seller, sellerOrAdmin, verifiedUser } from './middleware/authMiddleware.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
 // Route Imports
 import authRoutes from './routes/authRoutes.js';
 import opportunityRoutes from './routes/opportunityRoutes.js';
-import loanRoutes from './routes/loanRoutes.js';
-import marketplaceRoutes from './routes/marketplaceRoutes.js';
 import skillRoutes from './routes/skillRoutes.js';
 import roleRoutes from './routes/roleRoutes.js';
 import financialInstitutionRoutes from './routes/financialInstitutions.js';
 import userRoutes from './routes/userRoutes.js';
-import impactRoutes from './routes/impactRoutes.js';
 import heroSectionRoutes from './routes/heroSectionRoutes.js';
 import featureSectionRoutes from './routes/featureSectionRoutes.js';
+// Marketplace Routes
+import itemRoutes from './routes/itemRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import countryRoutes from './routes/countryRoutes.js';
 
 // Configure environment variables
 dotenv.config();
@@ -77,7 +78,12 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'healthy',
     environment: process.env.NODE_ENV || 'development',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    services: {
+      database: 'MongoDB',
+      authentication: 'JWT',
+      marketplace: 'active'
+    }
   });
 });
 
@@ -87,18 +93,24 @@ app.use('/api/roles', roleRoutes);
 app.use('/api/opportunities', opportunityRoutes);
 app.use('/api/financial-institutions', financialInstitutionRoutes);
 app.use('/api/skills', skillRoutes);
-app.use('/api/marketplace', marketplaceRoutes);
 app.use('/api/users', protect, userRoutes);
-app.use('/api/loans', protect, loanRoutes);
-app.use('/api/impact', protect, impactRoutes);
 app.use('/api/hero-sections', heroSectionRoutes);
 app.use('/api/feature-sections', featureSectionRoutes);
 
+// Marketplace Routes
+app.use('/api/items', itemRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/countries', countryRoutes);
+
 // Admin Protected Routes
-app.use('/api/admin/roles', protect, adminOnly, roleRoutes);
-app.use('/api/admin/financial-institutions', protect, adminOnly, financialInstitutionRoutes);
-app.use('/api/admin/hero-sections', protect, adminOnly, heroSectionRoutes);
-app.use('/api/admin/feature-sections', protect, adminOnly, featureSectionRoutes);
+app.use('/api/admin/roles', protect, admin, roleRoutes);
+app.use('/api/admin/financial-institutions', protect, admin, financialInstitutionRoutes);
+app.use('/api/admin/hero-sections', protect, admin, heroSectionRoutes);
+app.use('/api/admin/feature-sections', protect, admin, featureSectionRoutes);
+app.use('/api/admin/categories', protect, admin, categoryRoutes);
+
+// Seller Protected Routes
+app.use('/api/seller/items', protect, seller, itemRoutes);
 
 // Error Handling Middleware
 app.use(notFound);
@@ -120,11 +132,16 @@ const server = app.listen(PORT, () => {
      - ${process.env.FRONTEND_URL}
   🔒 Authentication required for protected routes
   👑 Admin privileges required for admin routes
+  🛍️ Seller privileges required for seller routes
   📚 API docs available at /api-docs
   🏥 Health check at /api/health
   🎯 Dynamic Sections:
      - Hero: /api/hero-sections
      - Features: /api/feature-sections
+  🛒 Marketplace Features:
+     - Items: /api/items
+     - Categories: /api/categories
+     - Countries: /api/countries
   `);
 });
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   FiFilter, 
   FiX, 
@@ -9,14 +9,51 @@ import {
   FiSearch,
   FiChevronDown
 } from 'react-icons/fi';
+import marketplaceService from "../../../services/marketplaceService";
 
-const Filters = ({ filters, categories = [], countries = [], onFilterChange }) => {
+
+const Filters = ({ filters, onFilterChange }) => {
+  const [categories, setCategories] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch categories and countries using marketplaceService
+  useEffect(() => {
+    const fetchFilterData = async () => {
+      try {
+        const [categoriesData, countriesData] = await Promise.all([
+          marketplaceService.getCategories(),
+          marketplaceService.getCountries()
+        ]);
+        setCategories(categoriesData);
+        setCountries(countriesData);
+      } catch (error) {
+        console.error('Error fetching filter data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFilterData();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     onFilterChange({
       [name]: type === 'checkbox' ? checked : value
     });
   };
+
+  if (loading) return (
+    <div className="bg-white p-4 rounded-xl shadow-lg border border-gray-100 mt-16 sticky top-4 z-10">
+      <div className="animate-pulse space-y-4">
+        <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="h-10 bg-gray-100 rounded"></div>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="bg-white p-4 rounded-xl shadow-lg border border-gray-100 mt-16 sticky top-4 z-10">
@@ -52,9 +89,9 @@ const Filters = ({ filters, categories = [], countries = [], onFilterChange }) =
             <input
               type="text"
               name="search"
-              value={filters.search}
+              value={filters.search || ''}
               onChange={handleChange}
-              className="w-full pl-9 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-9 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
               placeholder="Search items..."
             />
             <FiSearch className="absolute left-3 top-2.5 text-gray-400" />
@@ -75,14 +112,14 @@ const Filters = ({ filters, categories = [], countries = [], onFilterChange }) =
           <div className="relative">
             <select
               name="category"
-              value={filters.category}
+              value={filters.category || ''}
               onChange={handleChange}
-              className="w-full pl-3 pr-8 py-2 border border-gray-200 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+              className="w-full pl-3 pr-8 py-2 border border-gray-200 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
             >
               <option value="">All Categories</option>
               {categories.map((category) => (
-                <option key={category} value={category} className="py-1">
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                <option key={category._id} value={category._id}>
+                  {category.name}
                 </option>
               ))}
             </select>
@@ -98,11 +135,11 @@ const Filters = ({ filters, categories = [], countries = [], onFilterChange }) =
               name="country"
               value={filters.country || ''}
               onChange={handleChange}
-              className="w-full pl-3 pr-8 py-2 border border-gray-200 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+              className="w-full pl-3 pr-8 py-2 border border-gray-200 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
             >
               <option value="">All Countries</option>
               {countries.map((country) => (
-                <option key={country} value={country} className="py-1">
+                <option key={country} value={country}>
                   {country}
                 </option>
               ))}
@@ -120,10 +157,11 @@ const Filters = ({ filters, categories = [], countries = [], onFilterChange }) =
               <input
                 type="number"
                 name="minPrice"
-                value={filters.minPrice}
+                value={filters.minPrice || ''}
                 onChange={handleChange}
-                className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                 placeholder="Min"
+                min="0"
               />
               <FiDollarSign className="absolute left-3 top-2.5 text-gray-400" />
             </div>
@@ -131,10 +169,11 @@ const Filters = ({ filters, categories = [], countries = [], onFilterChange }) =
               <input
                 type="number"
                 name="maxPrice"
-                value={filters.maxPrice}
+                value={filters.maxPrice || ''}
                 onChange={handleChange}
-                className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                 placeholder="Max"
+                min="0"
               />
               <FiDollarSign className="absolute left-3 top-2.5 text-gray-400" />
             </div>
@@ -149,7 +188,7 @@ const Filters = ({ filters, categories = [], countries = [], onFilterChange }) =
               type="checkbox"
               id="fairTrade"
               name="fairTrade"
-              checked={filters.fairTrade}
+              checked={filters.fairTrade || false}
               onChange={handleChange}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
@@ -163,7 +202,7 @@ const Filters = ({ filters, categories = [], countries = [], onFilterChange }) =
               type="checkbox"
               id="organic"
               name="organic"
-              checked={filters.organic}
+              checked={filters.organic || false}
               onChange={handleChange}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
@@ -182,9 +221,9 @@ const Filters = ({ filters, categories = [], countries = [], onFilterChange }) =
           <div className="relative">
             <select
               name="sort"
-              value={filters.sort}
+              value={filters.sort || 'newest'}
               onChange={handleChange}
-              className="w-full pl-3 pr-8 py-2 border border-gray-200 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+              className="w-full pl-3 pr-8 py-2 border border-gray-200 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
             >
               <option value="newest">Newest Arrivals</option>
               <option value="price-low">Price: Low to High</option>

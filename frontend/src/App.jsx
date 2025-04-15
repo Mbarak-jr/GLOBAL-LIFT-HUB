@@ -5,7 +5,6 @@ import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import ForgotPassword from './pages/Auth/ForgotPassword';
 import ResetPassword from './pages/Auth/ResetPassword';
-import VerifyEmail from './pages/Auth/VerifyEmail';
 import ApplyLoans from './pages/Loans/ApplyLoan';
 import MyLoans from './pages/Loans/MyLoans';
 import AllOpportunities from './pages/Opportunities/AllOpportunities';
@@ -33,7 +32,6 @@ function App() {
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
-          <Route path="/auth/verify-email" element={<VerifyEmail />} />
           
           {/* Password reset routes - handles both query params and path params */}
           <Route path="/auth/reset-password" element={<ResetPassword />} />
