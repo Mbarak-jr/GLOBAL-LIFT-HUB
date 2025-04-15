@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowRight } from 'react-icons/fi';
+import { getHeroSections } from '../../services/heroService';
 
 const HeroSection = () => {
   const [heroSections, setHeroSections] = useState([]);
@@ -11,11 +12,7 @@ const HeroSection = () => {
   const fetchHeroSections = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/hero-sections');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
+      const data = await getHeroSections();
       setHeroSections(data);
       setError(null);
     } catch (err) {
@@ -67,11 +64,10 @@ const HeroSection = () => {
 
   return (
     <section 
-      key={currentIndex} // Force re-render for better animation
+      key={currentIndex}
       className={`relative bg-gradient-to-r ${current.background.colorFrom} ${current.background.colorTo} 
       text-white py-24 md:py-32 overflow-hidden`}
     >
-      {/* Background elements */}
       <div className="absolute top-0 left-0 w-full h-full opacity-10">
         <div className="absolute top-20 left-20 w-40 h-40 bg-yellow-300 rounded-full mix-blend-overlay"></div>
         <div className="absolute bottom-10 right-20 w-60 h-60 bg-blue-400 rounded-full mix-blend-overlay"></div>

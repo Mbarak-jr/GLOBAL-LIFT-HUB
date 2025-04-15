@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { getFeatureSections } from '../../services/featuresService';
 
 const FeaturesSection = () => {
   const [featureSections, setFeatureSections] = useState([]);
@@ -10,11 +11,7 @@ const FeaturesSection = () => {
   const fetchFeatureSections = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/feature-sections');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
+      const data = await getFeatureSections();
       setFeatureSections(data);
       setError(null);
     } catch (err) {
@@ -66,7 +63,7 @@ const FeaturesSection = () => {
 
   return (
     <section 
-      key={currentIndex} // Force re-render for better animation
+      key={currentIndex}
       className={`py-20 bg-gradient-to-b ${current.background.colorFrom} ${current.background.colorTo}`}
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
