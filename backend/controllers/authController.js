@@ -6,7 +6,6 @@ import User from '../models/User.js';
 
 dotenv.config();
 
-// SMTP transporter configuration
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
@@ -20,10 +19,8 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Valid roles for registration
 const allowedRoles = ['beneficiary', 'donor', 'partner', 'admin'];
 
-// JWT token generation
 const generateAuthToken = (userId, role) => {
   return jwt.sign(
     { userId, role },
@@ -32,12 +29,10 @@ const generateAuthToken = (userId, role) => {
   );
 };
 
-// Register a new user (automatically verified)
 export const registerUser = async (req, res) => {
   const { name, email, password, role } = req.body;
 
   try {
-    // Validate role
     if (!allowedRoles.includes(role)) {
       return res.status(400).json({ 
         success: false,
@@ -46,7 +41,6 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // Check for existing user
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ 
@@ -55,19 +49,16 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // Create new user (automatically verified)
     const newUser = await User.create({ 
       name, 
       email, 
       password, 
       role,
-      emailVerified: true // Auto-verify
+      emailVerified: true
     });
 
-    // Generate auth token
     const token = generateAuthToken(newUser._id, newUser.role);
 
-    // Send welcome email
     await transporter.sendMail({
       from: `"Welcome" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
       to: newUser.email,
@@ -104,7 +95,6 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// Login user (no verification check)
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -143,7 +133,43 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// Password reset functionality (kept for reference)
+export const verifyResetToken = async (req, res) => {
+  const { token } = req.params;
+
+  try {
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid or expired token' 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true,
+      message: 'Token is valid',
+      email: user.email
+    });
+
+  } catch (error) {
+    console.error('Token Verification Error:', error);
+    return res.status(500).json({ 
+      success: false,
+      message: 'Token verification failed',
+      error: error.message 
+    });
+  }
+};
+
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -162,11 +188,11 @@ export const forgotPassword = async (req, res) => {
       .createHash('sha256')
       .update(resetToken)
       .digest('hex');
-    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
     
     await user.save({ validateBeforeSave: false });
 
-    const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password/${resetToken}`;
     
     await transporter.sendMail({
       from: `"Support" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
@@ -199,9 +225,32 @@ export const forgotPassword = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
   const { token } = req.params;
-  const { password } = req.body;
+  const { password, newPassword, confirmPassword } = req.body;
 
   try {
+    // Debugging log - remove in production
+    console.log('Reset Password Request:', {
+      token,
+      body: req.body
+    });
+
+    // Handle both password formats
+    const actualPassword = password || newPassword;
+    
+    if (!actualPassword) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Password is required' 
+      });
+    }
+
+    if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Passwords do not match' 
+      });
+    }
+
     const hashedToken = crypto
       .createHash('sha256')
       .update(token)
@@ -219,7 +268,7 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    user.password = password;
+    user.password = actualPassword;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
     await user.save();
@@ -239,7 +288,6 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-// Test endpoints
 export const testSMTPConnection = async (req, res) => {
   try {
     await transporter.verify();
@@ -261,5 +309,6 @@ export default {
   loginUser,
   forgotPassword,
   resetPassword,
+  verifyResetToken,
   testSMTPConnection
 };

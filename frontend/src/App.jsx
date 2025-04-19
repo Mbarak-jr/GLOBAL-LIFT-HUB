@@ -32,28 +32,19 @@ function App() {
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
-          
-          {/* Password reset routes - handles both query params and path params */}
-          <Route path="/auth/reset-password" element={<ResetPassword />} />
           <Route path="/auth/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
           <Route path="/opportunities" element={<AvailableOpportunities />} />
           <Route path="/opportunities/:id" element={<OpportunityDetails />} />
           <Route path="/investment-opportunities" element={<InvestmentOpportunities />} />
           <Route path="/financial-institutions" element={<FinancialInstitutions />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
-          
-          {/* Marketplace route */}
           <Route path="/marketplace" element={<MarketplacePage />} />
-
-          {/* Skills and Courses routes */}
           <Route path="/skills" element={<SkillsPage />} />
           <Route path="/skills/:id" element={<SkillDetails />} />
           <Route path="/skills/courses/:id" element={<CourseDetails />} />
 
-          {/* Protected routes (require auth but no specific role) */}
+          {/* Protected routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/loans/apply" element={<ApplyLoans />} />
@@ -61,7 +52,7 @@ function App() {
             <Route path="/profile" element={<UserProfile />} />
           </Route>
 
-          {/* Admin-only routes (require admin role) */}
+          {/* Admin-only routes */}
           <Route element={<ProtectedRoute roles={['admin']} />}>
             <Route path="/admin/opportunities" element={<AllOpportunities />} />
             <Route path="/opportunities/create" element={<CreateOpportunity />} />
@@ -69,7 +60,7 @@ function App() {
             <Route path="/admin/skills" element={<SkillsPage adminView />} />
           </Route>
 
-          {/* Partner routes (require partner role) */}
+          {/* Partner routes */}
           <Route element={<ProtectedRoute roles={['partner', 'admin']} />}>
             <Route path="/partner/courses/create" element={<CreateOpportunity />} />
           </Route>

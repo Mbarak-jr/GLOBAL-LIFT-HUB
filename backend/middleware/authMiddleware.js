@@ -72,7 +72,7 @@ const sellerOrAdmin = (req, res, next) => {
 
 // Verified user middleware (email verified)
 const verifiedUser = (req, res, next) => {
-  if (req.user && req.user.isVerified) {
+  if (req.user && req.user.emailVerified) {
     next();
   } else {
     res.status(403);

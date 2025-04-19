@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { requestPasswordReset } from '../../services/authService';
+import { forgotPassword } from '../../services/authService';
 import { FiMail, FiArrowLeft, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 
 const ForgotPassword = () => {
@@ -9,6 +9,7 @@ const ForgotPassword = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(false);
 
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -27,10 +28,12 @@ const ForgotPassword = () => {
     setError('');
 
     try {
-      await requestPasswordReset(email);
+      await forgotPassword(email);
       setSuccess(true);
+      setCooldown(true);
+      setTimeout(() => setCooldown(false), 60000); // 1 minute cooldown
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send reset instructions. Please try again.');
+      setError(err.message || 'Failed to send reset instructions. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -65,12 +68,19 @@ const ForgotPassword = () => {
                   <p>We've sent instructions to reset your password to <span className="font-medium">{email}</span>.</p>
                   <p className="mt-2">Please check your email and follow the instructions.</p>
                 </div>
-                <div className="mt-6">
+                <div className="mt-6 space-y-3">
                   <button
                     onClick={() => navigate('/auth/login')}
                     className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
                   >
                     Back to Login
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={cooldown}
+                    className={`w-full text-sm font-medium text-blue-600 hover:text-blue-500 ${cooldown ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {cooldown ? 'Resend available in 1 minute' : 'Didn’t receive it? Resend Email'}
                   </button>
                 </div>
               </div>

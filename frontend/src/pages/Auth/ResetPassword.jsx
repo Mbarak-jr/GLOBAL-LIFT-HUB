@@ -2,32 +2,30 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { verifyResetToken, resetPassword } from '../../services/authService';
 import { FiLock, FiCheckCircle, FiAlertCircle, FiArrowLeft } from 'react-icons/fi';
+import zxcvbn from 'zxcvbn';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
   const { token: pathToken } = useParams();
   const navigate = useNavigate();
   
-  // Get token from either URL path or query params
   const token = pathToken || searchParams.get('token');
   
   const [formData, setFormData] = useState({
     newPassword: '',
     confirmPassword: ''
   });
+  const [passwordScore, setPasswordScore] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [tokenValid, setTokenValid] = useState(null);
   const [verifyingToken, setVerifyingToken] = useState(true);
 
-  // Verify token on component mount
   useEffect(() => {
     const verifyToken = async () => {
       try {
-        if (!token) {
-          throw new Error('No token provided');
-        }
+        if (!token) throw new Error('No token provided');
         
         const response = await verifyResetToken(token);
         if (response.success) {
@@ -47,7 +45,12 @@ const ResetPassword = () => {
   }, [token]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    
+    if (name === 'newPassword') {
+      setPasswordScore(zxcvbn(value).score);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -61,8 +64,8 @@ const ResetPassword = () => {
       return;
     }
 
-    if (formData.newPassword.length < 8) {
-      setError('Password must be at least 8 characters');
+    if (passwordScore < 2) { // Require at least "weak" score
+      setError('Password is too weak');
       setIsLoading(false);
       return;
     }
@@ -74,11 +77,7 @@ const ResetPassword = () => {
         confirmPassword: formData.confirmPassword
       });
       setSuccess(true);
-      
-      // Redirect after 3 seconds
-      setTimeout(() => {
-        navigate('/auth/login');
-      }, 3000);
+      setTimeout(() => navigate('/auth/login'), 3000);
     } catch (error) {
       setError(error.response?.data?.message || error.message || 'Password reset failed. Try again.');
     } finally {
@@ -175,6 +174,29 @@ const ResetPassword = () => {
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter new password"
                 />
+              </div>
+              <div className="mt-1">
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className={`h-1 flex-1 rounded-full ${
+                        passwordScore >= i ? 
+                          i < 2 ? 'bg-red-500' : 
+                          i < 4 ? 'bg-yellow-500' : 'bg-green-500' 
+                        : 'bg-gray-200'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Strength: {
+                    passwordScore < 1 ? "Very Weak" :
+                    passwordScore < 2 ? "Weak" :
+                    passwordScore < 3 ? "Fair" :
+                    passwordScore < 4 ? "Good" : "Strong"
+                  }
+                </p>
               </div>
             </div>
 
