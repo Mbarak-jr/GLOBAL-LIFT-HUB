@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { FiSearch, FiBriefcase, FiAward, FiDollarSign } from 'react-icons/fi';
+import { FiSearch, FiBriefcase, FiAward, FiDollarSign, FiHome } from 'react-icons/fi';
 
 const OpportunitiesHeader = () => {
   return (
@@ -7,12 +7,17 @@ const OpportunitiesHeader = () => {
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           {/* Logo/Brand */}
-          <Link to="/opportunities" className="flex items-center space-x-2">
-            <div className="bg-white p-2 rounded-lg shadow-md">
-              <FiBriefcase className="h-6 w-6 text-blue-600" />
-            </div>
-            <span className="text-white text-2xl font-bold tracking-tight">NoPoverty<span className="text-yellow-300">Opportunities</span></span>
-          </Link>
+          <div className="flex items-center space-x-4">
+            <Link to="/" className="p-2 rounded-lg hover:bg-white/20 transition-all" title="Home">
+              <FiHome className="h-6 w-6 text-white" />
+            </Link>
+            <Link to="/opportunities" className="flex items-center space-x-2">
+              <div className="bg-white p-2 rounded-lg shadow-md">
+                <FiBriefcase className="h-6 w-6 text-blue-600" />
+              </div>
+              <span className="text-white text-2xl font-bold tracking-tight">Global<span className="text-yellow-300">Opportunities</span></span>
+            </Link>
+          </div>
           
           {/* Navigation */}
           <nav className="hidden md:flex space-x-1">

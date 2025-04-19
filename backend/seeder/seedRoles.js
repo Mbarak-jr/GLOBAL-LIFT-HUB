@@ -1,26 +1,33 @@
 import dotenv from 'dotenv';
 import connectDB from '../config/db.js';
-import Role from '../models/roleModel.js';  // Corrected import for roleModel.js
+import User from '../models/User.js';
+import bcrypt from 'bcryptjs';
 
 dotenv.config();
 
-const roles = ['user', 'beneficiary', 'donor', 'partner', 'admin'];
-
-const seedRoles = async () => {
+const seedUsers = async () => {
   try {
     await connectDB();
 
-    for (const role of roles) {
-      const existing = await Role.findOne({ name: role });
-      if (!existing) {
-        await Role.create({ name: role });
-        console.log(`✅ Role '${role}' added.`);
-      } else {
-        console.log(`ℹ️ Role '${role}' already exists.`);
-      }
+    // Seed only admin user (no partner unless specifically required)
+    const adminEmail = 'admin@example.com';
+    const existingAdmin = await User.findOne({ email: adminEmail });
+    
+    if (!existingAdmin) {
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      await User.create({
+        name: 'Admin User',
+        email: adminEmail,
+        password: hashedPassword,
+        isAdmin: true,  // Only special privilege flag
+        emailVerified: true
+      });
+      console.log('✅ Admin user created');
+    } else {
+      console.log('ℹ️ Admin user already exists');
     }
 
-    console.log('🎉 Role seeding completed!');
+    console.log('🎉 User seeding completed!');
     process.exit();
   } catch (error) {
     console.error(`❌ Seeding error: ${error.message}`);
@@ -28,4 +35,4 @@ const seedRoles = async () => {
   }
 };
 
-seedRoles();
+seedUsers();

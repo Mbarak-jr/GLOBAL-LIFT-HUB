@@ -16,10 +16,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  role: {
-    type: String,
-    enum: ['user', 'beneficiary', 'donor', 'partner', 'admin'],
-    default: 'user'
+  isAdmin: {
+    type: Boolean,
+    default: false
   },
   emailVerified: {
     type: Boolean,
@@ -77,6 +76,11 @@ userSchema.methods.getEmailVerificationToken = function () {
   this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
 
   return verificationToken;
+};
+
+// Method to check if user is admin
+userSchema.methods.isAdminUser = function() {
+  return this.isAdmin;
 };
 
 export default mongoose.model('User', userSchema);

@@ -1,22 +1,27 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiShoppingBag, FiUser, FiHeart, FiShoppingCart, FiSearch } from 'react-icons/fi';
+import { FiShoppingBag, FiUser, FiHeart, FiShoppingCart, FiSearch, FiHome } from 'react-icons/fi';
 
 const MarketplaceHeader = () => {
   return (
     <header className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex justify-between items-center">
-          {/* Logo/Brand */}
-          <Link to="/marketplace" className="flex items-center space-x-2 group transition-all duration-300">
-            <div className="bg-white p-2 rounded-full group-hover:rotate-12 transition-transform duration-300 shadow-md group-hover:shadow-lg">
-              <FiShoppingBag className="h-6 w-6 text-blue-600" />
-            </div>
-            <span className="text-xl font-bold text-white tracking-tight">
-              <span className="text-yellow-300 font-extrabold">Global</span>
-              <span className="text-white font-bold"> Marketplace</span>
-            </span>
-          </Link>
+          {/* Logo/Brand with Home Button */}
+          <div className="flex items-center space-x-4">
+            <Link to="/" className="p-2 rounded-full hover:bg-yellow-400 hover:text-blue-800 transition-all duration-300" title="Home">
+              <FiHome className="h-6 w-6 text-white hover:text-blue-800" />
+            </Link>
+            <Link to="/marketplace" className="flex items-center space-x-2 group transition-all duration-300">
+              <div className="bg-white p-2 rounded-full group-hover:rotate-12 transition-transform duration-300 shadow-md group-hover:shadow-lg">
+                <FiShoppingBag className="h-6 w-6 text-blue-600" />
+              </div>
+              <span className="text-xl font-bold text-white tracking-tight">
+                <span className="text-yellow-300 font-extrabold">Global</span>
+                <span className="text-white font-bold"> Marketplace</span>
+              </span>
+            </Link>
+          </div>
           
           {/* Navigation */}
           <nav className="hidden md:flex space-x-1">

@@ -19,28 +19,18 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-const allowedRoles = ['beneficiary', 'donor', 'partner', 'admin'];
-
-const generateAuthToken = (userId, role) => {
+const generateAuthToken = (userId) => {
   return jwt.sign(
-    { userId, role },
+    { userId },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
   );
 };
 
 export const registerUser = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
 
   try {
-    if (!allowedRoles.includes(role)) {
-      return res.status(400).json({ 
-        success: false,
-        message: 'Invalid role specified',
-        allowedRoles
-      });
-    }
-
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ 
@@ -52,12 +42,11 @@ export const registerUser = async (req, res) => {
     const newUser = await User.create({ 
       name, 
       email, 
-      password, 
-      role,
+      password,
       emailVerified: true
     });
 
-    const token = generateAuthToken(newUser._id, newUser.role);
+    const token = generateAuthToken(newUser._id);
 
     await transporter.sendMail({
       from: `"Welcome" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
@@ -80,7 +69,6 @@ export const registerUser = async (req, res) => {
         id: newUser._id,
         name: newUser.name,
         email: newUser.email,
-        role: newUser.role,
         emailVerified: newUser.emailVerified
       }
     });
@@ -108,7 +96,7 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    const token = generateAuthToken(user._id, user.role);
+    const token = generateAuthToken(user._id);
 
     return res.status(200).json({
       success: true,
@@ -118,7 +106,6 @@ export const loginUser = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role,
         emailVerified: user.emailVerified
       }
     });
@@ -228,12 +215,6 @@ export const resetPassword = async (req, res) => {
   const { password, newPassword, confirmPassword } = req.body;
 
   try {
-    // Debugging log - remove in production
-    console.log('Reset Password Request:', {
-      token,
-      body: req.body
-    });
-
     // Handle both password formats
     const actualPassword = password || newPassword;
     

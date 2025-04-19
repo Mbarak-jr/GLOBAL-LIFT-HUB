@@ -8,7 +8,7 @@ import {
   updateOpportunity,
   deleteOpportunity
 } from '../controllers/opportunityController.js';
-import { protect, admin } from '../middleware/authMiddleware.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -17,12 +17,12 @@ router.get('/', getPublicOpportunities);
 router.get('/investments', getInvestmentOpportunities);
 router.get('/:id', getOpportunityById);
 
-// Protected admin routes
-router.use('/admin', protect, admin);  // Changed from adminOnly to admin
+// Protected routes (admin check will be handled in controller)
+router.post('/', protect, createOpportunity);
+router.put('/:id', protect, updateOpportunity);
+router.delete('/:id', protect, deleteOpportunity);
 
-router.get('/admin/all', getAllOpportunitiesAdmin);
-router.post('/admin', createOpportunity);
-router.put('/admin/:id', updateOpportunity);
-router.delete('/admin/:id', deleteOpportunity);
+// Admin-only route
+router.get('/admin/all', protect, getAllOpportunitiesAdmin);
 
 export default router;

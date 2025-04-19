@@ -5,7 +5,10 @@ const API_URL = `${API}/auth`;
 
 export const loginUser = async (credentials) => {
   try {
-    const response = await axios.post(`${API_URL}/login`, credentials);
+    const response = await axios.post(`${API_URL}/login`, {
+      email: credentials.email,
+      password: credentials.password
+    });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Invalid email or password');
@@ -14,7 +17,11 @@ export const loginUser = async (credentials) => {
 
 export const registerUser = async (userData) => {
   try {
-    const response = await axios.post(`${API_URL}/register`, userData);
+    const response = await axios.post(`${API_URL}/register`, {
+      name: userData.name,
+      email: userData.email,
+      password: userData.password
+    });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Registration failed');
@@ -40,8 +47,6 @@ export const verifyResetToken = async (token) => {
 };
 
 export const resetPassword = async ({ token, newPassword, confirmPassword }) => {
-  console.log('Making request to:', `${API_URL}/reset-password/${token}`);
-  
   try {
     const response = await axios.post(
       `${API_URL}/reset-password/${token}`,
@@ -54,17 +59,13 @@ export const resetPassword = async ({ token, newPassword, confirmPassword }) => 
         withCredentials: true
       }
     );
-    console.log('Reset password response:', response);
     return response.data;
   } catch (error) {
-    console.error('Full error details:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      data: error.config?.data,
+    console.error('Reset password error:', {
       status: error.response?.status,
-      response: error.response?.data
+      message: error.response?.data?.message
     });
-    throw error;
+    throw new Error(error.response?.data?.message || 'Password reset failed');
   }
 };
 
@@ -86,6 +87,17 @@ export const verifyEmail = async (token) => {
   }
 };
 
+export const getCurrentUser = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/me`, {
+      withCredentials: true
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch user data');
+  }
+};
+
 export default {
   loginUser,
   registerUser,
@@ -93,5 +105,6 @@ export default {
   resetPassword,
   verifyResetToken,
   resendVerificationEmail,
-  verifyEmail
+  verifyEmail,
+  getCurrentUser
 };

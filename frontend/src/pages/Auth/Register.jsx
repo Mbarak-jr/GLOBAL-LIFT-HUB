@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { registerUser } from '../../services/authService';
-import axios from 'axios';
 import { FiUser, FiMail, FiLock, FiArrowLeft, FiCheckCircle } from 'react-icons/fi';
 
 const Register = () => {
@@ -10,32 +9,12 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: '',
-    role: ''
+    password: ''
   });
-  const [roles, setRoles] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isRolesLoading, setIsRolesLoading] = useState(true);
   const [passwordStrength, setPasswordStrength] = useState(0);
-
-  useEffect(() => {
-    const fetchRoles = async () => {
-      setIsRolesLoading(true);
-      try {
-        const response = await axios.get('/api/roles');
-        setRoles(response.data || []);
-      } catch (err) {
-        console.error('Failed to fetch roles:', err);
-        setError('Failed to load registration options. Please refresh the page.');
-      } finally {
-        setIsRolesLoading(false);
-      }
-    };
-
-    fetchRoles();
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -176,31 +155,6 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* Role Selection */}
-              <div className="space-y-1">
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700">Select Role</label>
-                <select
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                  required
-                  disabled={isRolesLoading}
-                >
-                  <option value="" className="text-gray-500">Select your role</option>
-                  {isRolesLoading ? (
-                    <option disabled className="text-gray-500">Loading roles...</option>
-                  ) : (
-                    roles.map((role) => (
-                      <option key={role._id} value={role.name} className="text-gray-900">
-                        {role.name.charAt(0).toUpperCase() + role.name.slice(1)}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
-
               {/* Terms */}
               <div className="flex items-start">
                 <div className="flex items-center h-5">
@@ -225,8 +179,8 @@ const Register = () => {
               {/* Submit */}
               <button
                 type="submit"
-                disabled={isLoading || isRolesLoading}
-                className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 ${isLoading || isRolesLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                disabled={isLoading}
+                className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
                 {isLoading ? (
                   <>

@@ -6,7 +6,7 @@ import {
   updateInstitution,
   deleteInstitution
 } from '../controllers/financialInstitutionController.js';
-import { protect, admin } from '../middleware/authMiddleware.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -17,14 +17,12 @@ router.route('/')
 router.route('/:id')
   .get(getInstitution);
 
-// Protected admin routes
-router.use(protect, admin); // Changed from adminOnly to admin - applies to all routes below
-
+// Protected routes (admin check in controller)
 router.route('/')
-  .post(createInstitution);
+  .post(protect, createInstitution);
 
 router.route('/:id')
-  .patch(updateInstitution)
-  .delete(deleteInstitution);
+  .patch(protect, updateInstitution)
+  .delete(protect, deleteInstitution);
 
 export default router;
